@@ -69,7 +69,7 @@ on:
         description: '内核后缀(留空默认,开头别加连字符)'
         required: false
         type: string
-        default: ''
+        default: 'android14-KFzZ'
 
 jobs:
   build:
@@ -112,17 +112,39 @@ jobs:
       - name: 添加 SukiSU-Ultra
         id: ksu_version
         run: |
-          cd kernel_workspace
-          #if [[ "${{ env.KERNELSU_VARIANT }}" == "SukiSU-Ultra" ]]; then
-          #  echo "BRANCH='-s susfs-main'" >> $GITHUB_ENV
-          #fi
-          curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/refs/heads/main/kernel/setup.sh" | bash -s susfs-main
+          cd kernel_workspace/kernel_platformAdd commentMore actions
+          curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
           cd ./KernelSU
-          KSU_VERSION=$(expr $(/usr/bin/git rev-list --count main) "+" 10700)
+          for i in {1..3}; do
+            KSU_API_VERSION=$(curl -s "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-main/kernel/Makefile" | 
+              grep -m1 "KSU_VERSION_API :=" | 
+              awk -F'= ' '{print $2}' | 
+              tr -d '[:space:]')
+            [ -n "$KSU_API_VERSION" ] && break || sleep 2
+          done
+          [ -z "$KSU_API_VERSION" ] && KSU_API_VERSION="3.1.7"
+          echo "KSU_API_VERSION=$KSU_API_VERSION" >> $GITHUB_ENV
+          VERSION_DEFINITIONS=$(cat << EOF
+          define get_ksu_version_full
+          v\\$1-酷安@看风QAQ
+          endef
+      
+          KSU_VERSION_API := $KSU_API_VERSION
+          KSU_VERSION_FULL := v$KSU_API_VERSION-酷安@看风QAQ
+          EOF
+              )
+          sed -i '/define get_ksu_version_full/,/endef/d' kernel/Makefile
+          sed -i '/KSU_VERSION_API :=/d' kernel/Makefile
+          sed -i '/KSU_VERSION_FULL :=/d' kernel/Makefile
+          awk -v def="$VERSION_DEFINITIONS" '
+            /REPO_OWNER :=/ {print; print def; inserted=1; next}
+            1
+            END {if (!inserted) print def}
+          ' kernel/Makefile > kernel/Makefile.tmp && mv kernel/Makefile.tmp kernel/Makefile
+          KSU_VERSION=$(expr $(git rev-list --count main) + 10700 2>/dev/null || echo 13000)
           echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
-          echo "ksuver=$KSU_VERSION" >> $GITHUB_OUTPUT
-          export KSU_VERSION=$KSU_VERSION
-          sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=$KSU_VERSION/" kernel/Makefile
+          grep -A10 "REPO_OWNER" kernel/Makefile
+          grep "KSU_VERSION_FULL" kernel/Makefile
 
       - name: 应用 SukiSU-Ultra & SUSFS 补丁
         run: |
