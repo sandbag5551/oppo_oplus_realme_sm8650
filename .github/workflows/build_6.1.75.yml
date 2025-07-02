@@ -318,8 +318,8 @@ jobs:
           cd kernel_workspace
           git clone https://github.com/sandbag5551/AnyKernel3 --depth=1
           rm -rf ./AnyKernel3/.git
-          cd AnyKernel3
           mkdir -p ./AnyKernel3/Image
+          cd AnyKernel3
           cp ../common/out/arch/arm64/boot/Image ./Image/Image
           if [ ! -f ./Image ]; then
             echo "未找到内核镜像文件，构建可能出错"
