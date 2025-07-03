@@ -318,12 +318,10 @@ jobs:
           cd kernel_workspace
           git clone https://github.com/sandbag5551/AnyKernel3 --depth=1
           rm -rf ./AnyKernel3/.git
-          curl -LO https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_android
-          chmod +x patch_android
-          cp patch_android ./AnyKernel3/patch_android
           cd AnyKernel3
           mkdir -p ./Image
           cp ../common/out/arch/arm64/boot/Image ./Image/Image
+          cp ../SukiSU_patch/kpm/patch_android ./patch_android
           if [ ! -f ./Image/Image ]; then
             echo "未找到内核镜像文件，构建可能出错"
             exit 1
@@ -331,7 +329,6 @@ jobs:
           if [[ ${{ github.event.inputs.lz4k_enable }} == "true" ]]; then
             wget https://raw.githubusercontent.com/cctv18/oppo_oplus_realme_sm8650/refs/heads/main/zram.zip
           fi
-          zip -r ../AnyKernel3-SukiSU Ultra-${{ env.KSUVER }}-6.1.75.zip ./*
 
       - name: 上传 ZIP 工件
         uses: actions/upload-artifact@v4
