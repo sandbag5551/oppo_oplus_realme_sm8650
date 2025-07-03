@@ -313,22 +313,18 @@ jobs:
           make -j$(nproc --all) LLVM=-20 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnuabeihf- CC=clang LD=ld.lld HOSTCC=clang HOSTLD=ld.lld O=out KCFLAGS+=-Wno-error gki_defconfig all
           echo "内核编译完成！"
 
-      - name: Download and Copy patch_android to AnyKernel3
-        run: |
-          cd kernel_workspace
-          curl -LO https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_android
-          chmod +x patch_android
-          cp patch_android ../AnyKernel3/patch_android
-
       - name: 克隆 AnyKernel3 并打包
         run: |
           cd kernel_workspace
           git clone https://github.com/sandbag5551/AnyKernel3 --depth=1
           rm -rf ./AnyKernel3/.git
+          curl -LO https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_android
+          chmod +x patch_android
+          cp patch_android ./AnyKernel3/patch_android
           cd AnyKernel3
-           mkdir -p ./Image
+          mkdir -p ./Image
           cp ../common/out/arch/arm64/boot/Image ./Image/Image
-          if [ ! -f ./Image ]; then
+          if [ ! -f ./Image/Image ]; then
             echo "未找到内核镜像文件，构建可能出错"
             exit 1
           fi
