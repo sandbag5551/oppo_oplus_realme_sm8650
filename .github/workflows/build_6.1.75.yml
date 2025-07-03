@@ -337,4 +337,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: AnyKernel3-SukiSU Ultra-${{ env.KSUVER }}-6.1.75
-          path: ${{ github.workspace }}/kernel_workspace/*.zip
+          path: ./AnyKernel3/*
