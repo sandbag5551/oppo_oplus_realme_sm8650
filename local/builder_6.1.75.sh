@@ -51,7 +51,7 @@ sudo apt-get install curl bison flex make binutils dwarves git lld pahole zip pe
 sudo rm -rf ./llvm.sh
 sudo wget https://apt.llvm.org/llvm.sh
 sudo chmod +x llvm.sh
-sudo sudo ./llvm.sh 20 all
+sudo ./llvm.sh 20 all
 
 # ===== 初始化仓库 =====
 echo ">>> 初始化仓库..."
