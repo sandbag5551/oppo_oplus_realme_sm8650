@@ -10,15 +10,14 @@ echo "===== 欧加真SM8650通用6.1.75 A15 OKI内核本地编译脚本 By Coola
 echo ">>> 读取用户配置..."
 SOC_BRANCH=${SOC_BRANCH:-sm8650}
 MANIFEST=${MANIFEST:-oppo+oplus+realme}
-read -p "请输入自定义内核后缀（默认：android14-11-o-gca13bffobf09）: " CUSTOM_SUFFIX
-CUSTOM_SUFFIX=${CUSTOM_SUFFIX:-android14-11-o-gca13bffobf09}
-USE_PATCH_LINUX=${USE_PATCH_LINUX:-y}
+read -p "请输入自定义内核后缀（默认：android14-KFzZ）: " CUSTOM_SUFFIX
+CUSTOM_SUFFIX=${CUSTOM_SUFFIX:-android14-KFzZ}
 read -p "是否应用 kprobes钩子？(y/n，默认：n): " APPLY_KPROBES
 APPLY_LZ4KD=${APPLY_KPROBES:-n}
 read -p "是否应用 lz4 1.10.0 & zstd 1.5.7 补丁？(y/n，默认：y): " APPLY_LZ4
 APPLY_LZ4=${APPLY_LZ4:-y}
-read -p "是否应用 lz4kd 补丁？(y/n，默认：y): " APPLY_LZ4KD
-APPLY_LZ4KD=${APPLY_LZ4KD:-y}
+read -p "是否应用 lz4kd 补丁？(y/n，默认：n): " APPLY_LZ4KD
+APPLY_LZ4KD=${APPLY_LZ4KD:-n}
 read -p "是否启用网络功能增强优化配置？(y/n，默认：y): " APPLY_BETTERNET
 APPLY_BETTERNET=${APPLY_BETTERNET:-y}
 read -p "是否添加 BBR 等一系列拥塞控制算法？(y添加/n禁用/d默认，默认：n): " APPLY_BBR
@@ -172,10 +171,7 @@ fi
 # 开启O2编译优化配置
 echo "CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE=y" >> "$DEFCONFIG_FILE"
 
-# 仅在启用了 KPM 时添加 KPM 支持
-if [[ "$USE_PATCH_LINUX" == "y" || "$USE_PATCH_LINUX" == "Y" ]]; then
-  echo "CONFIG_KPM=y" >> "$DEFCONFIG_FILE"
-fi
+echo "CONFIG_KPM=y" >> "$DEFCONFIG_FILE"
 
 # 仅在启用了 LZ4KD 补丁时添加相关算法支持
 if [[ "$APPLY_LZ4KD" == "y" || "$APPLY_LZ4KD" == "Y" ]]; then
@@ -269,25 +265,10 @@ fi
 make -j$(nproc --all) LLVM=-20 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnuabeihf- CC=clang LD=ld.lld HOSTCC=clang HOSTLD=ld.lld O=out KCFLAGS+=-O2 KCFLAGS+=-Wno-error gki_defconfig all
 echo ">>> 内核编译成功！"
 
-# ===== 选择使用 patch_linux (KPM补丁)=====
-OUT_DIR="$WORKDIR/kernel_workspace/common/out/arch/arm64/boot"
-if [[ "$USE_PATCH_LINUX" == "y" || "$USE_PATCH_LINUX" == "Y" ]]; then
-  echo ">>> 使用 patch_linux 工具处理输出..."
-  cd "$OUT_DIR"
-  wget https://github.com/ShirkNeko/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_linux
-  chmod +x patch_linux
-  ./patch_linux
-  rm -f Image
-  mv oImage Image
-  echo ">>> 已成功打上KPM补丁"
-else
-  echo ">>> 跳过 patch_linux 操作"
-fi
-
 # ===== 克隆并打包 AnyKernel3 =====
 cd "$WORKDIR/kernel_workspace"
 echo ">>> 克隆 AnyKernel3 项目..."
-git clone https://github.com/cctv18/AnyKernel3 --depth=1
+git clone https://github.com/sandbag5551/AnyKernel3 --depth=1
 
 echo ">>> 清理 AnyKernel3 Git 信息..."
 rm -rf ./AnyKernel3/.git
