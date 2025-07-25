@@ -89,7 +89,7 @@ jobs:
         run: |
           sudo apt-mark hold firefox
           sudo apt-mark hold libc-bin
-          sudo apt-mark hold man-db
+          sudo apt purge man-db
           sudo rm -rf /var/lib/man-db/auto-update
           sudo apt update
           sudo apt-get install -y --no-install-recommends \
@@ -111,10 +111,11 @@ jobs:
         id: ccache-restore
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-6.1.75-${{ runner.os }}-main
+          key: ccache-new-6.1.75-${{ runner.os }}-main
           restore-keys: |
-            ccache-6.1.75-${{ runner.os }}-
-            ccache-6.1.75-
+            ccache-new-6.1.75-${{ runner.os }}-
+            ccache-new-6.1.75-
+            ccache-new-
       
       - name: 初始化并配置ccache
         run: |
