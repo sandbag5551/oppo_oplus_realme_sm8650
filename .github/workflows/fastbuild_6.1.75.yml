@@ -61,7 +61,7 @@ on:
         description: '是否启用三星SSG IO调度器(一加12等极少数机型开启后可能不开机,若出现bug请关闭此项)'
         required: true
         type: choice
-        default: 'true'
+        default: 'false'
         options:
           - 'true'
           - 'false'
