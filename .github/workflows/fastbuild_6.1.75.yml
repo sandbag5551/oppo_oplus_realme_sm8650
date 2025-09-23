@@ -472,6 +472,8 @@ jobs:
               }
             }
             ' ./Kconfig > Kconfig.tmp && mv Kconfig.tmp ./Kconfig
+            sed -i 's/selinuxfs.o //g' "./selinux/Makefile"
+            cat "./baseband-guard/sepatch.txt" >> "./selinux/Makefile"
           fi
 
       - name: 添加制作名称
