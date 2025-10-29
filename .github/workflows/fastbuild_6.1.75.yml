@@ -534,7 +534,7 @@ jobs:
           curl -LO https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_android
           mkdir -p ./Image
           cp ../common/out/arch/arm64/boot/Image ./Image/Image
-          if [[ ! -f ./Image ]]; then
+          if [[ ! -f ./Image/Image ]]; then
             echo "未找到内核镜像文件，构建可能出错"
             exit 1
           fi
