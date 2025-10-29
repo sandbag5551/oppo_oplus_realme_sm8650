@@ -32,14 +32,6 @@ on:
         options:
           - 'manual'
           - 'kprobes'
-      kpm_enable:
-        description: '是否开启kpm(仅对sukisu生效;可能轻微增加耗电，不需要可关闭)'
-        required: true
-        type: choice
-        default: 'false'
-        options:
-          - 'true'
-          - 'false'
       lz4_enable:
         description: '是否安装 lz4 1.10.0+zstd 1.5.7 补丁及 LZ4KD 补丁(0=均不安装,1=安装lz4&zstd补丁,2=安装lz4kd补丁,3=均安装,默认1)'
         required: true
@@ -532,18 +524,6 @@ jobs:
           ccache -s
           echo "编译后空间:"
           df -h
-         
-      - name: 应用KPM并修补内核
-        run: |
-          if [[ ${{ github.event.inputs.kpm_enable }} == 'true' && ${{ github.event.inputs.ksu_type }} == "sukisu" ]]; then
-            echo "正在应用KPM并修补内核..."
-            cd kernel_workspace/common/out/arch/arm64/boot
-            curl -LO https://github.com/ShirkNeko/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_linux
-            chmod +x patch_linux
-            ./patch_linux
-            rm -f Image
-            mv oImage Image
-          fi
           
       - name: 克隆 AnyKernel3 并打包
         run: |
@@ -551,7 +531,9 @@ jobs:
           git clone https://github.com/sandbag5551/AnyKernel3 --depth=1
           rm -rf ./AnyKernel3/.git
           cd AnyKernel3
-          cp ../common/out/arch/arm64/boot/Image ./Image
+          curl -LO https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_android
+          mkdir -p ./Image
+          cp ../common/out/arch/arm64/boot/Image ./Image/Image
           if [[ ! -f ./Image ]]; then
             echo "未找到内核镜像文件，构建可能出错"
             exit 1
