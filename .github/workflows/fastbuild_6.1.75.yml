@@ -531,7 +531,7 @@ jobs:
           git clone https://github.com/sandbag5551/AnyKernel3 --depth=1
           rm -rf ./AnyKernel3/.git
           cd AnyKernel3
-          curl -LO https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/0.12.1/patch_android
+          curl -LO https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/0.12.2/patch_android
           mkdir -p ./Image
           cp ../common/out/arch/arm64/boot/Image ./Image/Image
           if [[ ! -f ./Image/Image ]]; then
