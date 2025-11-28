@@ -6,7 +6,7 @@ env:
   KERNEL_VERSION: '6.1'
   KERNEL_NAME: 'android14-KFzZ'
 
-于:
+on:
   workflow_dispatch:
     inputs:
       ksu_type:
