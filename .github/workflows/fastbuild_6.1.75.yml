@@ -69,6 +69,12 @@ on:
         type: string
         default: ''
 
+      UNICODE_BYPASS:
+        description: "是否添加Unicode零宽绕过修复与内存优化补丁？"
+        required: true
+        type: boolean
+        default: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -247,27 +253,25 @@ jobs:
             echo "ksuver=$KSU_VERSION" >> $GITHUB_OUTPUT
             sed -i "s/DKSU_VERSION=16/DKSU_VERSION=${KSU_VERSION}/" kernel/Kbuild
           fi
+
       - name: 应用 KernelSU & SUSFS 补丁
         if: inputs.susfs_enable
         run: |
           cd kernel_workspace
           if [[ ${{ github.event.inputs.ksu_type }} == "sukisu" ]]; then
             echo "正在添加SukiSU Ultra补丁..."
-            git clone https://github.com/ShirkNeko/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}
-            git clone https://github.com/ShirkNeko/SukiSU_patch.git
-            git clone --depth=1 https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }} &
+            git clone --depth=1 https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}
             wget https://github.com/cctv18/oppo_oplus_realme_sm8650/raw/refs/heads/main/other_patch/69_hide_stuff.patch -O ./common/69_hide_stuff.patch
             cp ./susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch ./common/
             cp ./susfs4ksu/kernel_patches/fs/* ./common/fs/
             cp ./susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
-            cp ./SukiSU_patch/69_hide_stuff.patch ./common/
             cd ./common
             patch -p1 < 50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch || true
             patch -p1 < 69_hide_stuff.patch || true
           elif [[ ${{ github.event.inputs.ksu_type }} == "ksunext" ]]; then
             echo "正在添加KernelSU Next补丁..."
-            git clone --depth=1 https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }} &
-            wget https://github.com/cctv18/oppo_oplus_realme_sm8650/raw/refs/heads/main/other_patch/69_hide_stuff.patch -O ./common/69_hide_stuff.patch &
+            git clone --depth=1 https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}
+            wget https://github.com/cctv18/oppo_oplus_realme_sm8650/raw/refs/heads/main/other_patch/69_hide_stuff.patch -O ./common/69_hide_stuff.patch
             wget https://github.com/cctv18/oppo_oplus_realme_sm8650/raw/refs/heads/main/other_patch/scope_min_manual_hooks_v1.5.patch -O ./common/scope_min_manual_hooks_v1.5.patch.patch
             #由于KernelSU Next尚未更新并适配susfs 2.0.0，故回退至susfs 1.5.12
             cd susfs4ksu && git checkout a162e2469d0b472545e5e46457eee171c0975fb0 && cd ..
@@ -284,7 +288,7 @@ jobs:
             patch -p2 -N -F 3 < fix_apk_sign.c.patch || true
           elif [[ ${{ github.event.inputs.ksu_type }} == "mksu" ]]; then
             echo "正在为 MKSU (5ec1cff/KernelSU)添加补丁..."
-            git clone --depth=1 https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }} &
+            git clone --depth=1 https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}
             wget https://github.com/cctv18/oppo_oplus_realme_sm8650/raw/refs/heads/main/other_patch/69_hide_stuff.patch -O ./common/69_hide_stuff.patch
             cp ./susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./KernelSU/
             # 临时修复：修复susfs补丁日志输出（由于上游KSU把部分Makefile代码移至Kbuild中，而susfs补丁未同步修改，故需修复susfs补丁修补位点）
@@ -317,7 +321,7 @@ jobs:
             patch -p1 -N -F 3 < 69_hide_stuff.patch || true
           else
             echo "正在为原版 KernelSU (tiann/KernelSU)添加补丁..."
-            git clone --depth=1 https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }} &
+            git clone --depth=1 https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}
             wget https://github.com/cctv18/oppo_oplus_realme_sm8650/raw/refs/heads/main/other_patch/69_hide_stuff.patch -O ./common/69_hide_stuff.patch
             cp ./susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./KernelSU/
             # 临时修复：修复susfs补丁日志输出（由于上游KSU把部分Makefile代码移至Kbuild中，而susfs补丁未同步修改，故需修复susfs补丁修补位点）
@@ -359,6 +363,7 @@ jobs:
           cd ./common
           git apply -p1 < 001-lz4.patch || true
           patch -p1 < 002-zstd.patch || true
+
       - name: 应用 lz4kd 补丁
         if: inputs.lz4kd_enable
         run: |
@@ -366,6 +371,7 @@ jobs:
           cd kernel_workspace
           if [ ! -d "SukiSU_patch" ]; then
             git clone --depth=1 https://github.com/ShirkNeko/SukiSU_patch.git
+            git clone https://github.com/Numbersf/Action-Build.git
           fi
           cd common
           cp -r ../SukiSU_patch/other/zram/lz4k/include/linux/* ./include/linux/
@@ -373,7 +379,25 @@ jobs:
           cp -r ../SukiSU_patch/other/zram/lz4k/crypto/* ./crypto
           cp ../SukiSU_patch/other/zram/zram_patch/${{ env.KERNEL_VERSION }}/lz4kd.patch ./
           patch -p1 -F 3 < lz4kd.patch || true
-          
+
+      - name: Apply UNICODE_BYPASS and MEMORY_OPT
+        if: ${{ github.event.inputs.UNICODE_BYPASS == 'true' }}
+        run: |
+          PATCH_DIR="${GITHUB_WORKSPACE}/kernel_workspace/Action-Build/patches"
+          cd kernel_workspace/kernel_platform/common
+          patch -p1 --forward < "${PATCH_DIR}/optimized_mem_operations.patch"
+          patch -p1 --forward < "${PATCH_DIR}/file_struct_8bytes_align.patch"
+          patch -p1 --forward < "${PATCH_DIR}/reduce_cache_pressure.patch"
+          if [ "$KV1" -lt 6 ]; then
+            patch -p1 --forward < "${PATCH_DIR}/clear_page_16bytes_align.patch"
+            echo "Patching unicode!"
+            patch -p1 --forward < "${PATCH_DIR}/unicode_bypass_fix_6.1-.patch"
+          else
+            cat "${PATCH_DIR}/clear_page_16bytes_align.patch" | sed -e 's/SYM_FUNC_START_PI(clear_page)/SYM_FUNC_START_PI(__pi_clear_page)/' | patch -p1 -F3 --forward
+            echo "Patching unicode!"
+            patch -p1 --forward < "${PATCH_DIR}/unicode_bypass_fix_6.1+.patch"
+          fi
+
       - name: 添加SUSFS 配置项
         if: inputs.susfs_enable
         run: |
@@ -537,6 +561,7 @@ jobs:
           sed -i 's/selinuxfs.o //g' "./selinux/Makefile"
           sed -i 's/hooks.o //g' "./selinux/Makefile"
           cat "./baseband-guard/sepatch.txt" >> "./selinux/Makefile"
+
       - name: 添加制作名称
         run: |
           cd kernel_workspace
