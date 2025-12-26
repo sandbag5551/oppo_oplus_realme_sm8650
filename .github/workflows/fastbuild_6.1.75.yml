@@ -357,6 +357,7 @@ jobs:
           echo "正在添加lz4 1.10.0 & zstd 1.5.7补丁…"
           cd kernel_workspace
           git clone --depth=1 https://github.com/cctv18/oppo_oplus_realme_sm8650.git
+          git clone --depth=1 https://github.com/Numbersf/Action-Build.git
           cp ./oppo_oplus_realme_sm8650/zram_patch/001-lz4.patch ./common/
           cp ./oppo_oplus_realme_sm8650/zram_patch/lz4armv8.S ./common/lib
           cp ./oppo_oplus_realme_sm8650/zram_patch/002-zstd.patch ./common/
@@ -371,7 +372,6 @@ jobs:
           cd kernel_workspace
           if [ ! -d "SukiSU_patch" ]; then
             git clone --depth=1 https://github.com/ShirkNeko/SukiSU_patch.git
-            git clone https://github.com/Numbersf/Action-Build.git
           fi
           cd common
           cp -r ../SukiSU_patch/other/zram/lz4k/include/linux/* ./include/linux/
